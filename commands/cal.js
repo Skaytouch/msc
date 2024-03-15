@@ -5,12 +5,12 @@ const db = require("../mongoDB");
 let selectedThumbnailURL;
 
 module.exports = {
-  name: "play",
-  description: "come one let's hear some music!!",
+  name: "cal",
+  description: "Haydi, biraz müzik dinleyelim!!",
   permissions: "0x0000000000000800",
   options: [{
-    name: 'name',
-    description: 'Type the name of the music you want to play.',
+    name: 'isim',
+    description: 'Çalmak istediğiniz şarkının adını yazın.',
     type: ApplicationCommandOptionType.String,
     required: true
   }],
@@ -18,8 +18,8 @@ module.exports = {
   run: async (client, interaction) => {
     try {
 
-      const name = interaction.options.getString('name')
-      if (!name) return interaction.reply({ content: `❌ Enter a valid song name.`, ephemeral: true }).catch(e => { });
+      const name = interaction.options.getString('isim')
+      if (!name) return interaction.reply({ content: `❌ Geçerli bir şarkı adı girin.`, ephemeral: true }).catch(e => { });
       let res;
       try {
         res = await client.player.search(name, {
@@ -28,14 +28,14 @@ module.exports = {
           interaction
         });
       } catch (e) {
-        return interaction.editReply({ content: `❌ No results` }).catch(e => { });
+        return interaction.editReply({ content: `❌ Sonuç bulunamadı` }).catch(e => { });
       }
 
-      if (!res || !res.length || !res.length > 1) return interaction.reply({ content: `❌ No results`, ephemeral: true }).catch(e => { });
+      if (!res || !res.length || !res.length > 1) return interaction.reply({ content: `❌ Sonuç bulunamadı`, ephemeral: true }).catch(e => { });
 
       const embed = new EmbedBuilder();
       embed.setColor(client.config.embedColor);
-      embed.setTitle(`Found: ${name}`);
+      embed.setTitle(`Bulundu: ${name}`);
 
       const maxTracks = res.slice(0, 10);
 
@@ -62,12 +62,12 @@ module.exports = {
 
       let cancel = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setLabel("Cancel")
+          .setLabel("İptal")
           .setStyle(ButtonStyle.Danger)
           .setCustomId('cancel')
       );
 
-      embed.setDescription(`${maxTracks.map((song, i) => `**${i + 1}**. [${song.name}](${song.url}) | \`${song.uploader.name}\``).join('\n')}\n\n✨Choose a song from below!!`);
+      embed.setDescription(`${maxTracks.map((song, i) => `**${i + 1}**. [${song.name}](${song.url}) | \`${song.uploader.name}\``).join('\n')}\n\n✨Aşağıdan bir şarkı seçin!!`);
 
       let code;
       if (buttons1 && buttons2) {
@@ -83,7 +83,7 @@ module.exports = {
         collector.on('collect', async (button) => {
           switch (button.customId) {
             case 'cancel': {
-              embed.setDescription(`Search interrupted`);
+              embed.setDescription(`Arama kesildi`);
               await interaction.editReply({ embeds: [embed], components: [] }).catch(e => { });
               return collector.stop();
             }
@@ -100,7 +100,7 @@ module.exports = {
                   interaction
                 });
               } catch (e) {
-                await interaction.editReply({ content: `❌ No results!`, ephemeral: true }).catch(e => { });
+                await interaction.editReply({ content: `❌ Sonuç bulunamadı!`, ephemeral: true }).catch(e => { });
               }
               return collector.stop();
             }
