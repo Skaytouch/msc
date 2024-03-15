@@ -41,7 +41,6 @@ module.exports = {
           { name: '🎵 Çalan', value: 'Şu anda çalınan şarkı bilgilerini görüntüle' },
           { name: '🔊 Ses', value: 'Müzik sesini ayarlayın [yüksek sesle dinlemek risklidir]' },
         ) 
-       .setImage('https://cdn.discordapp.com/attachments/1150827819547504741/1168917372267151370/standard.gif?ex=65538222&is=65410d22&hm=b4994392f44679da41fc9304eb69deaa3769e136057556deec0db69ae8d33a97&')
 
       interaction.reply({
         embeds: [musicCommandsEmbed, basicCommandsEmbed]
