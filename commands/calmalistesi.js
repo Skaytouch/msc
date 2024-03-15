@@ -2,101 +2,101 @@ const { ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuil
 const db = require('../mongoDB');
 
 module.exports = {
-  name: "playlist",
-  description: "Lets you manage Album commands.",
+  name: "calmalistesi",
+  description: "Albüm komutlarını yönetmenize olanak tanır.",
   options: [
     {
-      name: "create",
-      description: "Create an Album.",
+      name: "yarat",
+      description: "Albüm yarat",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
-          name: "name",
-          description: "Give a name for your Album",
+          name: "isim",
+          description: "Albümünüze bir ad verin",
           type: ApplicationCommandOptionType.String,
           required: true
         },
         {
-          name: "public",
-          description: "Want to make it Public ? True 0r false",
+          name: "genel",
+          description: "Herkese açık hale getirmek ister misiniz? Doğru/yanlış",
           type: ApplicationCommandOptionType.Boolean,
           required: true
         }
       ]
     },
     {
-      name: "delete",
-      description: "Want to remove your Album ?",
+      name: "sil",
+      description: "Albümünüzü kaldırmak mı istiyorsunuz?",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
-          name: "name",
-          description: "Write the name of your Album to delete.",
+          name: "isim",
+          description: "Silinecek Albümünüzün adını yazın.",
           type: ApplicationCommandOptionType.String,
           required: true
         }
       ]
     },
     {
-      name: "add-music",
-      description: "It allows you to add songs to the Album.",
+      name: "muzik-ekle",
+      description: "Albüme şarkı eklemenizi sağlar.",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
-          name: "playlist-name",
-          description: "Write an Album name.",
+          name: "calmalistesi-isim",
+          description: "Bir Albüm adı yazın.",
           type: ApplicationCommandOptionType.String,
           required: true
         },
         {
-          name: "name",
-          description: "Write a song name or a song link.",
+          name: "isim",
+          description: "Bir şarkı adı veya şarkı bağlantısı yazın.",
           type: ApplicationCommandOptionType.String,
           required: true
         }
       ]
     },
     {
-      name: "delete-music",
-      description: "It allows you to delete song from Album.",
+      name: "muzik-sil",
+      description: "Şarkıyı Albümden silmenizi sağlar.",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
-          name: "playlist-name",
-          description: "Write an Album name.",
+          name: "calmalistesi-isim",
+          description: "Bir Albüm adı yazın.",
           type: ApplicationCommandOptionType.String,
           required: true
         },
         {
-          name: "name",
-          description: "Write a song name.",
+          name: "isim",
+          description: "Bir şarkı adı yazın.",
           type: ApplicationCommandOptionType.String,
           required: true
         }
       ]
     },
     {
-      name: "list",
-      description: "Browse songs in an Album.",
+      name: "liste",
+      description: "Bir Albümdeki şarkılara göz atın.",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
-          name: "name",
-          description: "Write an Album name.",
+          name: "isim",
+          description: "Bir Albüm adı yazın.",
           type: ApplicationCommandOptionType.String,
           required: true
         }
       ]
     },
     {
-      name: "lists",
-      description: "Browse all your Albums.",
+      name: "listele",
+      description: "Tüm Albümlerinize göz atın.",
       type: ApplicationCommandOptionType.Subcommand,
       options: []
     },
     {
-      name: "top",
-      description: "Most popular Albums.",
+      name: "popüler",
+      description: "En popüler Albümler.",
       type: ApplicationCommandOptionType.Subcommand,
       options: []
     }
@@ -105,10 +105,10 @@ module.exports = {
   run: async (client, interaction) => {
     try {
       let stp = interaction.options.getSubcommand()
-      if (stp === "create") {
-        let name = interaction.options.getString('name')
-        let public = interaction.options.getBoolean('public')
-        if (!name) return interaction.reply({ content: '⚠️ Enter Album name to create!', ephemeral: true }).catch(e => { })
+      if (stp === "yarat") {
+        let name = interaction.options.getString('isim')
+        let public = interaction.options.getBoolean('genel')
+        if (!name) return interaction.reply({ content: '⚠️ Oluşturulacak albüm adını girin!', ephemeral: true }).catch(e => { })
 
         const userplaylist = await db.playlist.findOne({ userID: interaction.user.id })
 
@@ -116,17 +116,17 @@ module.exports = {
         if (playlist?.length > 0) {
           for (let i = 0; i < playlist.length; i++) {
             if (playlist[i]?.playlist?.filter(p => p.name === name)?.length > 0) {
-              return interaction.reply({ content: '⚠️ Album already Exitst!', ephemeral: true }).catch(e => { })
+              return interaction.reply({ content: '⚠️ Albüm Zaten Var!', ephemeral: true }).catch(e => { })
             }
           }
         }
 
-        if (userplaylist?.playlist?.length >= client.config.playlistSettings.maxPlaylist) return interaction.reply({ content: '🚫 Exceeded Album limit', ephemeral: true }).catch(e => { })
+        if (userplaylist?.playlist?.length >= client.config.playlistSettings.maxPlaylist) return interaction.reply({ content: '🚫 Albüm sınırı aşıldı', ephemeral: true }).catch(e => { })
 
         const creatingAlbumEmbed = new EmbedBuilder()
           .setColor('#0099ff')
-          .setTitle('Creating Album')
-          .setDescription(`Hey <@${interaction.member.id}>, your album is being created. Rock on! 🎸`)
+          .setTitle('Albüm yaratılıyor')
+          .setDescription(`Merhaba <@${interaction.member.id}>, albümünüz oluşturuluyor. Rock müzikle devam edin! 🎸`)
           .setTimestamp();
 
         // Replying with both content and embed
@@ -134,7 +134,7 @@ module.exports = {
           content: '',
           embeds: [creatingAlbumEmbed]
         }).catch(e => {
-          console.error('Error sending message:', e);
+          console.error('Mesaj gönderilirken hata oluştu:', e);
         });
 
         await db.playlist.updateOne({ userID: interaction.user.id }, {
@@ -169,12 +169,12 @@ await interaction.editReply({
 });
       }
 
-      if (stp === "delete") {
-        let name = interaction.options.getString('name')
-        if (!name) return interaction.reply({ content: '⚠️ Enter album name to create!', ephemeral: true }).catch(e => { })
+      if (stp === "sil") {
+        let name = interaction.options.getString('isim')
+        if (!name) return interaction.reply({ content: '⚠️ Oluşturulacak albüm adını girin!', ephemeral: true }).catch(e => { })
 
         const playlist = await db.playlist.findOne({ userID: interaction.user.id }).catch(e => { })
-        if (!playlist?.playlist?.filter(p => p.name === name).length > 0) return interaction.reply({ content: '❌ No album Found', ephemeral: true }).catch(e => { })
+        if (!playlist?.playlist?.filter(p => p.name === name).length > 0) return interaction.reply({ content: '❌ Albüm Bulunamadı', ephemeral: true }).catch(e => { })
 
         const music_filter = playlist?.musics?.filter(m => m.playlist_name === name)
         if (music_filter?.length > 0){
@@ -228,10 +228,10 @@ await interaction.editReply({
 });
       }
 
-      if (stp === "add-music") {
-        let name = interaction.options.getString('name')
+      if (stp === "muzik-ekle") {
+        let name = interaction.options.getString('isim')
         if (!name) return interaction.reply({ content: '⚠️ Enter song name to search', ephemeral: true }).catch(e => { })
-        let playlist_name = interaction.options.getString('playlist-name')
+        let playlist_name = interaction.options.getString('calmalistesi-isim')
         if (!playlist_name) return interaction.reply({ content: '⚠️ Enter album name to add songs', ephemeral: true }).catch(e => { })
 
         const playlist = await db.playlist.findOne({ userID: interaction.user.id }).catch(e => { })
@@ -267,7 +267,7 @@ await interaction.editReply({
 });
 
         const music_filter = playlist?.musics?.filter(m => m.playlist_name === playlist_name && m.music_name === res[0]?.name)
-        if (music_filter?.length > 0) return interaction.editReply({ content: ' ❌ Song already in Album', ephemeral: true }).catch(e => { })
+        if (music_filter?.length > 0) return interaction.editReply({ content: ' ❌ Şarkı zaten Albümde', ephemeral: true }).catch(e => { })
 
         await db.playlist.updateOne({ userID: interaction.user.id }, {
           $push: {
@@ -284,14 +284,14 @@ await interaction.editReply({
 
       }
 
-      if (stp === "delete-music") {
-        let name = interaction.options.getString('name')
+      if (stp === "muzik-sil") {
+        let name = interaction.options.getString('isim')
         if (!name) return interaction.reply({ content: '⚠️ Enter Song Name to Search!', ephemeral: true }).catch(e => { })
-        let playlist_name = interaction.options.getString('playlist-name')
+        let playlist_name = interaction.options.getString('calmalistesi-name')
         if (!playlist_name) return interaction.reply({ content: '⚠️ Enter name of the album to remove song!', ephemeral: true }).catch(e => { })
 
         const playlist = await db.playlist.findOne({ userID: interaction.user.id }).catch(e => { })
-        if (!playlist?.playlist?.filter(p => p.name === playlist_name).length > 0) return interaction.reply({ content: '❌ No album Found!', ephemeral: true }).catch(e => { })
+        if (!playlist?.playlist?.filter(p => p.name === playlist_name).length > 0) return interaction.reply({ content: '❌ Albüm Bulunamadı!', ephemeral: true }).catch(e => { })
 
         const music_filter = playlist?.musics?.filter(m => m.playlist_name === playlist_name && m.music_name === name)
         if (!music_filter?.length > 0) return interaction.reply({ content: `❌ No Song found!`, ephemeral: true }).catch(e => { })
@@ -338,8 +338,8 @@ await interaction.editReply({
 });
       }
 
-      if (stp === "list") {
-        let name = interaction.options.getString('name')
+      if (stp === "liste") {
+        let name = interaction.options.getString('isim')
         if (!name) return interaction.reply({ content: '⚠️ Enter Album name to find it!', ephemeral: true }).catch(e => { })
 
         let trackl
@@ -366,7 +366,7 @@ await interaction.editReply({
           } else {
             arr++
             if (arr === playlist.length) {
-              return interaction.reply({ content: '❌ No album Found', ephemeral: true }).catch(e => { })
+              return interaction.reply({ content: '❌ Albüm Bulunamadı', ephemeral: true }).catch(e => { })
             }
           }
         }
@@ -492,7 +492,7 @@ await interaction.editReply({
 
       }
 
-      if (stp === "lists") {
+      if (stp === "listele") {
         const playlist = await db?.playlist?.findOne({ userID: interaction.user.id }).catch(e => { })
         if (!playlist?.playlist?.length > 0) return interaction.reply({ content: `⚠️ You haven't created a Album`, ephemeral: true }).catch(e => { })
 
@@ -512,7 +512,7 @@ await interaction.editReply({
 
       }
 
-      if (stp === "top") {
+      if (stp === "populer") {
         let playlists = await db?.playlist?.find().catch(e => { })
         if (!playlists?.length > 0) return interaction.reply({ content: 'There are no playlists ❌', ephemeral: true }).catch(e => { })
 
