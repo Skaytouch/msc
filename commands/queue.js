@@ -1,32 +1,17 @@
-/*
-
-  ██████╗░████████╗██╗░░██╗           
-  ██╔══██╗╚══██╔══╝╚██╗██╔╝          
-  ██████╔╝░░░██║░░░░╚███╔╝░          
-  ██╔══██╗░░░██║░░░░██╔██╗░          
-  ██║░░██║░░░██║░░░██╔╝╚██╗          
-  ╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝          
-
-   
-   # MADE BY RTX!! FEEL FREE TO USE ANY PART OF CODE
-   ## FOR HELP CONTACT ME ON DISCORD
-   ## Contact    [ DISCORD SERVER :  https://discord.gg/FUEHs7RCqz ]
-   ## YT : https://www.youtube.com/channel/UCPbAvYWBgnYhliJa1BIrv0A
-*/
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const db = require("../mongoDB");
+
 module.exports = {
-  name: "queue",
-  description: "It shows you the queue list.",
+  name: "sira",
+  description: "Sıra listesini gösterir.",
   permissions: "0x0000000000000800",
   options: [],
   run: async (client, interaction) => {
     
     try {
-
-     const queue = client.player.getQueue(interaction.guild.id);
-      if (!queue || !queue.playing) return interaction.reply({ content: '⚠️ No music playing!!', ephemeral: true }).catch(e => { })
-      if (!queue.songs[0]) return interaction.reply({ content: '⚠️ Queue is empty!!', ephemeral: true }).catch(e => { })
+      const queue = client.player.getQueue(interaction.guild.id);
+      if (!queue || !queue.playing) return interaction.reply({ content: '⚠️ Şu anda müzik çalmıyor!!', ephemeral: true }).catch(e => { })
+      if (!queue.songs[0]) return interaction.reply({ content: '⚠️ Sıra boş!!', ephemeral: true }).catch(e => { })
 
       const trackl = []
       queue.songs.map(async (track, i) => {
@@ -39,8 +24,8 @@ module.exports = {
         })
       })
 
-      const backId = "emojiBack"
-      const forwardId = "emojiForward"
+      const backId = "emojiGeri"
+      const forwardId = "emojiİleri"
       const backButton = new ButtonBuilder({
         style: ButtonStyle.Secondary,
         emoji: "⬅️",
@@ -50,7 +35,7 @@ module.exports = {
       const deleteButton = new ButtonBuilder({
         style: ButtonStyle.Secondary,
         emoji: "❌",
-        customId: "close"
+        customId: "kapat"
       });
 
       const forwardButton = new ButtonBuilder({
@@ -61,63 +46,63 @@ module.exports = {
 
 
       let kaçtane = 8
-      let page = 1
+      let sayfa = 1
       let a = trackl.length / kaçtane
 
-      const generateEmbed = async (start) => {
-        let sayı = page === 1 ? 1 : page * kaçtane - kaçtane + 1
-        const current = trackl.slice(start, start + kaçtane)
-        if (!current || !current?.length > 0) return interaction.reply({ content: '⚠️ Queue is empty!!', ephemeral: true }).catch(e => { })
+      const generateEmbed = async (başlangıç) => {
+        let sayı = sayfa === 1 ? 1 : sayfa * kaçtane - kaçtane + 1
+        const current = trackl.slice(başlangıç, başlangıç + kaçtane)
+        if (!current || !current?.length > 0) return interaction.reply({ content: '⚠️ Sıra boş!!', ephemeral: true }).catch(e => { })
         return new EmbedBuilder()
-          .setTitle(`${interaction.guild.name}  Queue`)
+          .setTitle(`${interaction.guild.name}  Sıra`)
           .setThumbnail(interaction.guild.iconURL({ size: 2048, dynamic: true }))
           .setColor(client.config.embedColor)
-          .setDescription(`▶️ Now plawying: \`${queue.songs[0].name}\`
+          .setDescription(`▶️ Şu an çalıyor: \`${queue.songs[0].name}\`
     ${current.map(data =>
-            `\n\`${sayı++}\` | [${data.title}](${data.url}) | (Executed by <@${data.user.id}>)`
+            `\n\`${sayı++}\` | [${data.title}](${data.url}) | (<@${data.user.id}> tarafından gerçekleştirildi)`
           )}`)
-          .setFooter({ text: `Page ${page}/${Math.floor(a + 1)}` })
+          .setFooter({ text: `Sayfa ${sayfa}/${Math.floor(a + 1)}` })
       }
 
-      const canFitOnOnePage = trackl.length <= kaçtane
+      const birSayfayaSığabilir = trackl.length <= kaçtane
 
       await interaction.reply({
         embeds: [await generateEmbed(0)],
-        components: canFitOnOnePage
+        components: birSayfayaSığabilir
           ? []
           : [new ActionRowBuilder({ components: [deleteButton, forwardButton] })],
         fetchReply: true
       }).then(async Message => {
-        const filter = i => i.user.id === interaction.user.id
-        const collector = Message.createMessageComponentCollector({ filter, time: 120000 });
+        const filtre = i => i.user.id === interaction.user.id
+        const toplayıcı = Message.createMessageComponentCollector({ filtre, time: 120000 });
 
 
-        let currentIndex = 0
-        collector.on("collect", async (button) => {
-          if (button?.customId === "close") {
-            collector?.stop()
-           return button?.reply({ content: 'Command Cancelled', ephemeral: true }).catch(e => { })
+        let mevcutİndeks = 0
+        toplayıcı.on("collect", async (button) => {
+          if (button?.customId === "kapat") {
+            toplayıcı?.stop()
+           return button?.reply({ content: 'Komut iptal edildi', ephemeral: true }).catch(e => { })
           } else {
 
             if (button.customId === backId) {
-              page--
+              sayfa--
             }
             if (button.customId === forwardId) {
-              page++
+              sayfa++
             }
 
             button.customId === backId
-              ? (currentIndex -= kaçtane)
-              : (currentIndex += kaçtane)
+              ? (mevcutİndeks -= kaçtane)
+              : (mevcutİndeks += kaçtane)
 
             await interaction.editReply({
-              embeds: [await generateEmbed(currentIndex)],
+              embeds: [await generateEmbed(mevcutİndeks)],
               components: [
                 new ActionRowBuilder({
                   components: [
-                    ...(currentIndex ? [backButton] : []),
+                    ...(mevcutİndeks ? [backButton] : []),
                     deleteButton,
-                    ...(currentIndex + kaçtane < trackl.length ? [forwardButton] : []),
+                    ...(mevcutİndeks + kaçtane < trackl.length ? [forwardButton] : []),
                   ],
                 }),
               ],
@@ -126,7 +111,7 @@ module.exports = {
           }
         })
 
-        collector.on("end", async (button) => {
+        toplayıcı.on("end", async (button) => {
           button = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
               .setStyle(ButtonStyle.Secondary)
@@ -136,7 +121,7 @@ module.exports = {
             new ButtonBuilder()
               .setStyle(ButtonStyle.Secondary)
               .setEmoji("❌")
-              .setCustomId("close")
+              .setCustomId("kapat")
               .setDisabled(true),
             new ButtonBuilder()
               .setStyle(ButtonStyle.Secondary)
@@ -145,9 +130,9 @@ module.exports = {
               .setDisabled(true))
 
           const embed = new EmbedBuilder()
-            .setTitle('Command Timeout')
+            .setTitle('Komut Zaman Aşımı')
             .setColor(`#ecfc03`)
-            .setDescription('▶️ Execute the Queue command again!!')
+            .setDescription('▶️ Sıra komutunu tekrar çalıştırın!!')
           return interaction?.editReply({ embeds: [embed], components: [button] }).catch(e => { })
 
         })
@@ -158,18 +143,3 @@ module.exports = {
   }
   }
 }
-/*
-
-  ██████╗░████████╗██╗░░██╗           
-  ██╔══██╗╚══██╔══╝╚██╗██╔╝          
-  ██████╔╝░░░██║░░░░╚███╔╝░          
-  ██╔══██╗░░░██║░░░░██╔██╗░          
-  ██║░░██║░░░██║░░░██╔╝╚██╗          
-  ╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝          
-
-   
-   # MADE BY RTX!! FEEL FREE TO USE ANY PART OF CODE
-   ## FOR HELP CONTACT ME ON DISCORD
-   ## Contact    [ DISCORD SERVER :  https://discord.gg/FUEHs7RCqz ]
-   ## YT : https://www.youtube.com/channel/UCPbAvYWBgnYhliJa1BIrv0A
-*/
